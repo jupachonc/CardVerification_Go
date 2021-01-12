@@ -1,23 +1,25 @@
 package main
 
 import (
+	"log"
+	"net/http"
 	"strconv"
 	"unicode"
 )
 
-func getNumeric(str string) string  {
+func getNumeric(str string) string {
 	var out = ""
-	for _, rune := range str{
-		if unicode.IsDigit(rune){
+	for _, rune := range str {
+		if unicode.IsDigit(rune) {
 			out += string(rune)
 		}
 	}
 	return out
 }
 
-func getAllSubstrings(str string, ln int) []string{
+func getAllSubstrings(str string, ln int) []string {
 	var out []string
-	max := len(str)+1
+	max := len(str) + 1
 	i := 0
 	f := ln
 	for f < max {
@@ -28,17 +30,17 @@ func getAllSubstrings(str string, ln int) []string{
 	return out
 }
 
-func LuhnAlgorithm(carNo string) bool{
+func LuhnAlgorithm(carNo string) bool {
 
 	nDigits := len(carNo)
 	nSum := 0
 	var mustDuplicate = false
 
-	for i := nDigits-1; i >= 0; i--{
+	for i := nDigits - 1; i >= 0; i-- {
 		var d = rune(carNo[i]) - '0'
 
-		if mustDuplicate{
-			d = d*2
+		if mustDuplicate {
+			d = d * 2
 		}
 
 		nSum += int(d) / 10
@@ -47,20 +49,27 @@ func LuhnAlgorithm(carNo string) bool{
 		mustDuplicate = !mustDuplicate
 	}
 
-	return nSum % 10 == 0
+	return nSum%10 == 0
 
 }
-
-func proofAlgorithm(str string)bool  {
+func info_binlist(num string) bool {
+	url := "https://lookup.binlist.net/" + num
+	req, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return req.StatusCode == 200
+}
+func proofAlgorithm(str string) bool {
 	if len(str) < 12 {
-		return  false
+		return false
 	}
 
 	//Se itera en el rango de las posibles tarjetas de crédito
-	for i:=12; i <= 19; i++{
-		for _, subt := range getAllSubstrings(str, i){
+	for i := 12; i <= 19; i++ {
+		for _, subt := range getAllSubstrings(str, i) {
 			i, _ := strconv.Atoi(string([]rune(subt)[0]))
-			if LuhnAlgorithm(subt) && i >= 3 && i <= 6{
+			if LuhnAlgorithm(subt) && i >= 3 && i <= 6 && info_binlist(subt[:6]) {
 				return true
 			}
 		}
@@ -68,6 +77,6 @@ func proofAlgorithm(str string)bool  {
 	return false
 }
 
-func isCreditCard(txt string) bool{
+func isCreditCard(txt string) bool {
 	return proofAlgorithm(getNumeric(txt))
 }
